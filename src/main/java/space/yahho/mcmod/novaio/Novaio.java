@@ -1,5 +1,6 @@
 package space.yahho.mcmod.novaio;
 
+import com.github.luben.zstd.Zstd;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.Registries;
@@ -115,6 +116,9 @@ public class Novaio {
     public void onServerStarting(ServerStartingEvent event) {
         // Do something when the server starts
         LOGGER.info("HELLO from server starting");
+        LOGGER.debug("server path: {}",event.getServer().getServerDirectory().getPath());
+        byte[] zstdTest = Zstd.compress("hi!sushi!".getBytes());
+        LOGGER.debug("ZStd check: 'hi!sushi!' -> {} -> {}", zstdTest, Zstd.decompress(zstdTest));
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent

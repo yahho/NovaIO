@@ -142,6 +142,12 @@ repositories {
 }
 
 dependencies {
+    // insert non-minecraft library (at this time, its zstd one)
+    // further information here:
+    // https://docs.minecraftforge.net/en/fg-6.x/dependencies/#non-minecraft-dependencies
+    minecraftLibrary 'com.github.luben:zstd-jni:[1.5.7-6,)'
+    jarJar(group: 'com.github.luben', name: 'zstd-jni', version: '[1.5.7-6,)')
+
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.
@@ -205,3 +211,5 @@ tasks.named('jar', Jar).configure {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
 }
+
+jarJar.enable()
