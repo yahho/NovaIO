@@ -1,0 +1,9 @@
+{
+  "tooltip.novaio.item_qty": "Count: %s",
+  "container.novaio.slim_barrel": "Slim Barrel",
+  "commands.novaio.updatenum.error.nofile": "Failed to update number! No such file found: %s",
+  "commands.novaio.updatenum.error.noid": "Failed to update number! Specified UUID was not recognized as valid identifier: %s",
+  "commands.novaio.updatenum.error.iofail": "Failed to update number! I/O error has been occurred during handle file",
+  "commands.novaio.updatenum.success": "Successfully updated specified number.",
+  "commands.novaio.updatenum.error": "Failed to update number! Unknown error... Something might be left on server logs or etc."
+}

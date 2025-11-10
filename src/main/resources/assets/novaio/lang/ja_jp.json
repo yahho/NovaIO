@@ -1,0 +1,9 @@
+{
+  "tooltip.novaio.item_qty": "数量: %s",
+  "container.novaio.slim_barrel": "スリムな樽",
+  "commands.novaio.updatenum.error.nofile": "数の更新に失敗しました! そのようなファイルはありません: %s",
+  "commands.novaio.updatenum.error.noid": "数の更新に失敗しました! 指定されたUUIDは有効な識別子として認識されていません: %s",
+  "commands.novaio.updatenum.error.iofail": "数の更新に失敗しました! ファイルの取扱い時にI/Oエラーが発生しました",
+  "commands.novaio.updatenum.success": "指定された数の更新に成功しました。",
+  "commands.novaio.updatenum.error": "数の更新に失敗しました! 不明なエラーです... サーバーのログ等に何か残されているかもしれません。"
+}

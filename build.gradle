@@ -149,6 +149,12 @@ dependencies {
     minecraftLibrary 'com.github.luben:zstd-jni:[1.5.7-6,)'
     jarJar(group: 'com.github.luben', name: 'zstd-jni', version: '[1.5.7-6,)')
 
+    // MixinExtras
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:[0.5.0,)"))
+    implementation(jarJar("io.github.llamalad7:mixinextras-forge:[0.5.0,)")){
+        jarJar.ranged(it,"[0.5.0,)")
+    }
+
     // Specify the version of Minecraft to use.
     // Any artifact can be supplied so long as it has a "userdev" classifier artifact and is a compatible patcher artifact.
     // The "userdev" classifier will be requested and setup by ForgeGradle.
@@ -173,6 +179,10 @@ dependencies {
 
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
+    // JUnit 5
+    testImplementation(platform('org.junit:junit-bom:6.0.1'))
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -214,3 +224,12 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 jarJar.enable()
+
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        maxHeapSize("4G")
+        events("passed", "skipped", "failed")
+    }
+}
