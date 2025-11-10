@@ -72,6 +72,7 @@ public class NovaIO {
     public static final DeferredRegister<ArgumentTypeInfo<?,?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, MODID);
     // Creates a new Block with the id "novaio:example_block", combining the namespace and path
     public static final RegistryObject<Block> EXAMPLE_BLOCK = BLOCKS.register("slim_barrel", () -> new SlimBarrelBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).explosionResistance(8).instabreak().noOcclusion().instrument(NoteBlockInstrument.BASS).noLootTable()));
+    @SuppressWarnings("DataFlowIssue")
     public static final RegistryObject<BlockEntityType<SlimBarrelBlockEntity>> SLIM_BARREL_ENTITY = BLOCK_ENTITIES.register("slim_barrel", () -> BlockEntityType.Builder.of(SlimBarrelBlockEntity::new, EXAMPLE_BLOCK.get()).build(null));
     // Creates a new BlockItem with the id "novaio:example_block", combining the namespace and path
     public static final RegistryObject<Item> EXAMPLE_BLOCK_ITEM = ITEMS.register("slim_barrel", () -> new BlockItem(EXAMPLE_BLOCK.get(), new Item.Properties()));
@@ -175,7 +176,7 @@ public class NovaIO {
 
     @SubscribeEvent
     public void onLevelSave(LevelEvent.Save save) {
-        if (save.getLevel() == Level.OVERWORLD) {
+        if (save.getLevel() instanceof Level && ((Level) save.getLevel()).dimension() == Level.OVERWORLD) {
             NUMBER_MANAGER.saveAllStoredNumbers();
         }
     }

@@ -18,12 +18,12 @@ import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 public class NovaIoNumberManager {
-    private HashMap<UUID, HeavyBigInteger> loadedNumbers = new HashMap<>();
+    private final HashMap<UUID, HeavyBigInteger> loadedNumbers = new HashMap<>();
     private final Path numStorePath;
 
     public NovaIoNumberManager(Path storePath) {
         this.numStorePath = storePath;
-        loadAllStoredNumbers(listStoredDatafiles(), true);
+        loadAllStoredNumbers(listStoredDatafiles());
     }
 
     private List<File> listStoredDatafiles() {
@@ -53,10 +53,10 @@ public class NovaIoNumberManager {
         inputStream.close();
     }
 
-    private void loadAllStoredNumbers(List<File> files, boolean overwrite) {
+    private void loadAllStoredNumbers(List<File> files) {
         files.forEach(file -> {
             try {
-                loadStoredNumber(file, overwrite);
+                loadStoredNumber(file, true);
             } catch (IOException | ClassNotFoundException e) {
                 LOGGER.error(e.getMessage());
             }
@@ -118,8 +118,9 @@ public class NovaIoNumberManager {
             try {
                 long len = Files.size(source);
                 try (SeekableByteChannel ch = Files.newByteChannel(source, StandardOpenOption.READ)) {
-                    ByteBuffer bb = ByteBuffer.allocate((int) Math.min(268_435_455, len));
+                    ByteBuffer bb = ByteBuffer.allocate((int) Math.min(256_000_000, len));
                     HeavyBigInteger heavyBigInteger = null;
+                    LOGGER.info("Loading data(size: {} Bytes) from: {}", len, source);
 
                     do {
                         bb.clear();
@@ -127,9 +128,26 @@ public class NovaIoNumberManager {
                         bb.flip();
                         byte[] bytes = new byte[bb.remaining()];
                         bb.get(bytes);
+                        LOGGER.debug("Trying to load {} bytes...", bytes.length);
                         if (heavyBigInteger == null) heavyBigInteger = new HeavyBigInteger(new BigInteger(1, bytes));
-                        else heavyBigInteger = heavyBigInteger.shiftLeft(BigInteger.valueOf(bytes.length * 8L)).add(new HeavyBigInteger(new BigInteger(1, bytes)));
+                        else {
+                            int retries = 0;
+                            while (true) {
+                                try {
+                                    heavyBigInteger = heavyBigInteger.shiftLeft(BigInteger.valueOf(bytes.length * 8L)).add(new HeavyBigInteger(new BigInteger(1, bytes)));
+                                    break;
+                                } catch (ArithmeticException e) {
+                                    if (retries >= 3) {
+                                        LOGGER.error("Unable to load number part! Calculation failed repeatedly!");
+                                        throw new Exception("Calculation failed repeatedly!");
+                                    }
+                                    LOGGER.debug("Something went wrong! Retrying...");
+                                    retries++;
+                                }
+                            }
+                        }
                         len -= bytes.length;
+                        LOGGER.debug("{} bytes loaded, {} bytes remaining...", bytes.length, len);
                     } while (len > 0);
 
                     updateStoredNumber(uuid, heavyBigInteger);
@@ -138,6 +156,8 @@ public class NovaIoNumberManager {
                 }
             } catch (IOException e) {
                 LOGGER.error("I/O error has occurred during assigning file data to number. ID: {}, error: {}", uuid, e.getMessage());
+                return false;
+            } catch (Exception e) {
                 return false;
             }
         }

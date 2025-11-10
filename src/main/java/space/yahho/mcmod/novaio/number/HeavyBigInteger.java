@@ -137,13 +137,12 @@ public class HeavyBigInteger extends Number implements Comparable<HeavyBigIntege
             if ((long) Integer.MAX_VALUE < (long) shiftCounts[1] + shifted.get(i).bitLength()) {
                 // process carry bits across BigInteger
                 int additionalShift = Math.toIntExact((long) shiftCounts[1] + shifted.get(i).bitLength() - Integer.MAX_VALUE);
-                BigInteger p = shifted.get(i).shiftRight(shifted.get(i).bitLength() - additionalShift);
-                if (i == shifted.size() - 1) {
-                    shifted.add(p);
-                } else {
-                    shifted.set(i + 1, shifted.get(i + 1).add(p));
-                }
-                shifted.set(i, shifted.get(i).subtract(p.shiftLeft(shifted.get(i).bitLength() - additionalShift)).shiftLeft(shiftCounts[1]));
+                int toShift = shifted.get(i).bitLength() - additionalShift;
+
+                if (i == shifted.size() - 1) shifted.add(shifted.get(i).shiftRight(toShift));
+                else shifted.set(i + 1, shifted.get(i + 1).add(shifted.get(i).shiftRight(toShift)));
+
+                shifted.set(i, shifted.get(i).subtract(shifted.get(i).shiftRight(toShift).shiftLeft(toShift)).shiftLeft(shiftCounts[1]));
             } else {
                 shifted.set(i, shifted.get(i).shiftLeft(shiftCounts[1]));
             }
