@@ -74,13 +74,13 @@ public class HeavyBigInteger extends Number implements Comparable<HeavyBigIntege
     @Override
     public float floatValue() {
         if (this.number.isEmpty()) return 0;
-        return (this.number.size() > 1) ? (this.signum() < 0 ? -Float.MAX_VALUE : Float.MAX_VALUE) : this.number.get(0).floatValue();
+        return (this.number.size() > 1) ? (this.signum() < 0 ? Float.NEGATIVE_INFINITY : Float.POSITIVE_INFINITY) : this.number.get(0).floatValue();
     }
 
     @Override
     public double doubleValue() {
         if (this.number.isEmpty()) return 0;
-        return (this.number.size() > 1) ? (this.signum() < 0 ? -Double.MAX_VALUE : Double.MAX_VALUE) : this.number.get(0).doubleValue();
+        return (this.number.size() > 1) ? (this.signum() < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY) : this.number.get(0).doubleValue();
     }
 
     public int signum() {
