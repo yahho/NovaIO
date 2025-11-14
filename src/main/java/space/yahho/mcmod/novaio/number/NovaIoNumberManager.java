@@ -31,6 +31,7 @@ public class NovaIoNumberManager {
         if (files == null) return new ArrayList<>();
         return Arrays.stream(files)
                 .filter((file) ->{
+                    // is "<UUID>.dat.zstd" file?
                     if (file.isDirectory()) return false;
                     if (file.isFile() && file.getName().endsWith(".dat.zstd")) {
                         try {
@@ -47,10 +48,10 @@ public class NovaIoNumberManager {
 
     private void loadStoredNumber(File file, boolean overwrite) throws IOException, ClassNotFoundException {
         UUID uuid = UUID.fromString(file.getName().substring(0, 36).toUpperCase());
-        if (this.loadedNumbers.containsKey(uuid) && !overwrite) return;
-        ObjectInputStream inputStream = new ObjectInputStream(new ZstdInputStream(Files.newInputStream(file.toPath(), StandardOpenOption.READ)));
-        this.loadedNumbers.put(uuid, (HeavyBigInteger) inputStream.readObject());
-        inputStream.close();
+        if (this.loadedNumbers.containsKey(uuid) && !overwrite) return; // dry-run
+        try (ObjectInputStream inputStream = new ObjectInputStream(new ZstdInputStream(Files.newInputStream(file.toPath(), StandardOpenOption.READ)))) {
+            this.loadedNumbers.put(uuid, (HeavyBigInteger) inputStream.readObject());
+        }
     }
 
     private void loadAllStoredNumbers(List<File> files) {
@@ -67,15 +68,15 @@ public class NovaIoNumberManager {
         Path datafile = numStorePath.resolve(uuid.toString() + ".dat.zstd");
         LOGGER.debug("Saving data to: {}", datafile);
         if (Files.exists(datafile)) {
-            ObjectOutputStream oos = new ObjectOutputStream(new ZstdOutputStream(Files.newOutputStream(datafile, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)));
-            oos.writeObject(this.loadedNumbers.get(uuid));
-            oos.flush();
-            oos.close();
+            try (ObjectOutputStream oos = new ObjectOutputStream(new ZstdOutputStream(Files.newOutputStream(datafile, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)))) {
+                oos.writeObject(this.loadedNumbers.get(uuid));
+                oos.flush();
+            }
         } else {
-            ObjectOutputStream oos = new ObjectOutputStream(new ZstdOutputStream(Files.newOutputStream(datafile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)));
-            oos.writeObject(this.loadedNumbers.get(uuid));
-            oos.flush();
-            oos.close();
+            try (ObjectOutputStream oos = new ObjectOutputStream(new ZstdOutputStream(Files.newOutputStream(datafile, StandardOpenOption.WRITE, StandardOpenOption.CREATE_NEW)))) {
+                oos.writeObject(this.loadedNumbers.get(uuid));
+                oos.flush();
+            }
         }
     }
 
@@ -131,6 +132,8 @@ public class NovaIoNumberManager {
                         LOGGER.debug("Trying to load {} bytes...", bytes.length);
                         if (heavyBigInteger == null) heavyBigInteger = new HeavyBigInteger(new BigInteger(1, bytes));
                         else {
+                            // Sometimes shift operation bugged... This should not be happened I think, but randomly occurs. So just retry it, then mostly goes fine.
+                            // How to reproduce explicitly...?
                             int retries = 0;
                             while (true) {
                                 try {

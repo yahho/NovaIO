@@ -8,14 +8,12 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
@@ -54,47 +52,44 @@ import java.nio.file.Path;
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod(NovaIO.MODID)
 public class NovaIO {
-
     public static final String MODNAME = "NovaIO";
     // Define mod id in a common place for everything to reference
     public static final String MODID = "novaio";
     // Directly reference a slf4j logger
     public static final Logger LOGGER= LogUtils.getLogger();
+
     public static NovaIoNumberManager NUMBER_MANAGER;
     // Create a Deferred Register to hold Blocks which will all be registered under the "novaio" namespace
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MODID);
+    // block entities
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, MODID);
-    // Create a Deferred Register to hold Items which will all be registered under the "novaio" namespace
+    // items
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, MODID);
-    // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "novaio" namespace
+    // tabs
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
-
+    // command arguments
     public static final DeferredRegister<ArgumentTypeInfo<?,?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, MODID);
-    // Creates a new Block with the id "novaio:example_block", combining the namespace and path
-    public static final RegistryObject<Block> EXAMPLE_BLOCK = BLOCKS.register("slim_barrel", () -> new SlimBarrelBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).explosionResistance(8).instabreak().noOcclusion().instrument(NoteBlockInstrument.BASS).noLootTable()));
+
+    // Creates a new Block with the id "novaio:slim_barrel", combining the namespace and path
+    public static final RegistryObject<Block> SLIM_BARREL_BLOCK = BLOCKS.register("slim_barrel", () -> new SlimBarrelBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).explosionResistance(8).instabreak().noOcclusion().instrument(NoteBlockInstrument.BASS).noLootTable()));
+    // block entity "novaio:slim_barrel"
     @SuppressWarnings("DataFlowIssue")
-    public static final RegistryObject<BlockEntityType<SlimBarrelBlockEntity>> SLIM_BARREL_ENTITY = BLOCK_ENTITIES.register("slim_barrel", () -> BlockEntityType.Builder.of(SlimBarrelBlockEntity::new, EXAMPLE_BLOCK.get()).build(null));
-    // Creates a new BlockItem with the id "novaio:example_block", combining the namespace and path
-    public static final RegistryObject<Item> EXAMPLE_BLOCK_ITEM = ITEMS.register("slim_barrel", () -> new BlockItem(EXAMPLE_BLOCK.get(), new Item.Properties()));
+    public static final RegistryObject<BlockEntityType<SlimBarrelBlockEntity>> SLIM_BARREL_ENTITY = BLOCK_ENTITIES.register("slim_barrel", () -> BlockEntityType.Builder.of(SlimBarrelBlockEntity::new, SLIM_BARREL_BLOCK.get()).build(null));
+    // block item "novaio:slim_barrel"
+    public static final RegistryObject<Item> SLIM_BARREL_BLOCK_ITEM = ITEMS.register("slim_barrel", () -> new BlockItem(SLIM_BARREL_BLOCK.get(), new Item.Properties()));
+    // item "novaio:finite_qty_item"
     public static final RegistryObject<Item> FINITE_QTY_ITEM = ITEMS.register("finite_qty_item", () -> new FiniteQtyItem(new Item.Properties().stacksTo(Integer.MAX_VALUE)));
-
-    // Creates a new food item with the id "novaio:example_id", nutrition 1 and saturation 2
-    public static final RegistryObject<Item> EXAMPLE_ITEM = ITEMS.register("example_item", () -> new Item(new Item.Properties().food(new FoodProperties.Builder()
-            .alwaysEat()
-            .nutrition(1)
-            .saturationMod(2f)
-            .build())));
-
-    // Creates a creative tab with the id "novaio:example_tab" for the example item, that is placed after the combat tab
-    public static final RegistryObject<CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
-            .withTabsBefore(CreativeModeTabs.COMBAT)
-            .title(Component.nullToEmpty(MODNAME))
-            .icon(() -> EXAMPLE_ITEM.get().getDefaultInstance())
+    // tab "novaio:novaio_tab"
+    public static final RegistryObject<CreativeModeTab> NOVAIO_TAB = CREATIVE_MODE_TABS.register("novaio_tab", () -> CreativeModeTab.builder()
+            .withTabsBefore(CreativeModeTabs.COMBAT) // tab order position
+            .title(Component.nullToEmpty(MODNAME)) // name of this tab
+            .icon(() -> SLIM_BARREL_BLOCK_ITEM.get().getDefaultInstance()) // the representative item of this mod
             .displayItems((parameters, output) -> {
-                    output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
+                    // things shown inside of this tab
+                    output.accept(SLIM_BARREL_BLOCK_ITEM.get());
             })
             .build());
-
+    // command argument "novaio:novaio_uuid"
     public static final RegistryObject<ArgumentTypeInfo<?,?>> NOVAIO_UUID_ARGTYPE = COMMAND_ARGUMENT_TYPES.register("novaio_uuid", ()-> ArgumentTypeInfos.registerByClass(NovaIoUuidArgument.class, SingletonArgumentInfo.contextFree(NovaIoUuidArgument::novaIoUuid)));
 
     public NovaIO(@NotNull FMLJavaModLoadingContext ctx) {
@@ -105,12 +100,13 @@ public class NovaIO {
 
         // Register the Deferred Register to the mod event bus so blocks get registered
         BLOCKS.register(modEventBus);
+        // block entities
         BLOCK_ENTITIES.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so items get registered
+        // items
         ITEMS.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so tabs get registered
+        // tabs
         CREATIVE_MODE_TABS.register(modEventBus);
-
+        // command arguments
         COMMAND_ARGUMENT_TYPES.register(modEventBus);
 
         // Register ourselves for server and other game events we are interested in
@@ -126,25 +122,19 @@ public class NovaIO {
     private void commonSetup(final FMLCommonSetupEvent event) {
         // Some common setup code
         LOGGER.info("HELLO FROM COMMON SETUP");
-        LOGGER.info("DIRT BLOCK >> {}", ForgeRegistries.BLOCKS.getKey(Blocks.DIRT));
-
-        if (Config.logDirtBlock) LOGGER.info("DIRT BLOCK >> {}", ForgeRegistries.BLOCKS.getKey(Blocks.DIRT));
-
-        LOGGER.info("{}{}", Config.magicNumberIntroduction, Config.magicNumber);
-
-        Config.items.forEach((item) -> LOGGER.info("ITEM >> {}", item.toString()));
     }
 
     // Add the example block item to the building blocks tab
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) event.accept(EXAMPLE_BLOCK_ITEM);
+        if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) event.accept(SLIM_BARREL_BLOCK_ITEM);
     }
 
     // You can use SubscribeEvent and let the Event Bus discover methods to call
     @SubscribeEvent
     public void onServerStarting(ServerAboutToStartEvent event) {
         // Do something when the server starts
-        LOGGER.info("HELLO from server starting");
+        LOGGER.info("Initializing BigNumber data...");
+        // <minecraft_path>/saves/<world_name>
         Path worldPath = event.getServer().getWorldPath(LevelResource.ROOT).normalize().toAbsolutePath();
         File datastorePathFile = worldPath.resolve(MODNAME).toFile();
         LOGGER.debug("world path: {}", worldPath);
@@ -156,17 +146,18 @@ public class NovaIO {
                 else datastorePathFile.mkdir();
             }
             NUMBER_MANAGER = new NovaIoNumberManager(datastorePathFile.toPath());
+            LOGGER.info("Successfully loaded BigNumbers.");
         } catch (Exception e) {
             LOGGER.error("Error during prepare datastore for world at {}, Reason: {}", worldPath, e);
             LOGGER.error("{} might not work correctly!", MODNAME);
         }
 
         byte[] zstdTest = Zstd.compress("hi!sushi!".getBytes());
-        LOGGER.debug("ZStd check: 'hi!sushi!' -> {} -> {}", zstdTest, Zstd.decompress(zstdTest));
+        LOGGER.debug("ZStandard compression check: 'hi!sushi!' -> {} -> {}", zstdTest, Zstd.decompress(zstdTest));
     }
 
     @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-    public class ForgeBusListener {
+    public static class ForgeBusListener {
             @SubscribeEvent
             public static void onCommandRegister(RegisterCommandsEvent event){
                 LOGGER.debug("registering novaio commands...");
@@ -184,6 +175,8 @@ public class NovaIO {
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
         NUMBER_MANAGER.saveAllStoredNumbers();
+        // do not mix next failure and last success
+        NUMBER_MANAGER = null;
     }
 
     // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
@@ -194,7 +187,6 @@ public class NovaIO {
         public static void onClientSetup(FMLClientSetupEvent event) {
             // Some client setup code
             LOGGER.info("HELLO FROM CLIENT SETUP");
-            LOGGER.info("MINECRAFT NAME >> {}", Minecraft.getInstance().getUser().getName());
         }
 
         @SubscribeEvent
