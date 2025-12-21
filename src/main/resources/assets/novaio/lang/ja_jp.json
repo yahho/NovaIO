@@ -1,4 +1,5 @@
 {
+  "block.novaio.slim_barrel": "スリムな樽",
   "tooltip.novaio.item_qty": "数量: %s",
   "container.novaio.slim_barrel": "スリムな樽",
   "commands.novaio.updatenum.error.nofile": "数の更新に失敗しました! そのようなファイルはありません: %s",

@@ -1,4 +1,5 @@
 {
+  "block.novaio.slim_barrel": "Slim Barrel",
   "tooltip.novaio.item_qty": "Count: %s",
   "container.novaio.slim_barrel": "Slim Barrel",
   "commands.novaio.updatenum.error.nofile": "Failed to update number! No such file found: %s",

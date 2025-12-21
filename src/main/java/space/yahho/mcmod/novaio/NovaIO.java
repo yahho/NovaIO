@@ -26,6 +26,7 @@ import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.server.ServerStoppingEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -167,15 +168,21 @@ public class NovaIO {
 
     @SubscribeEvent
     public void onLevelSave(LevelEvent.Save save) {
-        if (save.getLevel() instanceof Level && ((Level) save.getLevel()).dimension() == Level.OVERWORLD) {
-            NUMBER_MANAGER.saveAllStoredNumbers();
-        }
+        // save is duty of serializeNBT()
+        // if (save.getLevel() instanceof Level && ((Level) save.getLevel()).dimension() == Level.OVERWORLD) {
+        //     NUMBER_MANAGER.saveAllStoredNumbers();
+        // }
     }
 
     @SubscribeEvent
-    public void onServerStopping(ServerStoppingEvent event) {
-        NUMBER_MANAGER.saveAllStoredNumbers();
-        // do not mix next failure and last success
+    public void onServerStopped(ServerStoppedEvent event) {
+        // save is duty of serializeNBT()
+        // NUMBER_MANAGER.saveAllStoredNumbers();
+
+        // at client integrated server environment, exit of minecraft instance may not happen.
+        // user might do continue with other world, but if failed to load its data, NUMBER_MANAGER will be kept before one.
+        // so then, if we did not reset NUMBER_MANAGER here, number data for other world are mixed/overwriten into before loaded world's data.(corruption)
+        // tl;dr. Prevent mixing next failure and last success
         NUMBER_MANAGER = null;
     }
 
